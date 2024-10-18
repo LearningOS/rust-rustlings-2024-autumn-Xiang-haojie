@@ -30,6 +30,20 @@ impl Graph for UndirectedGraph {
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        let (node1, node2, weight) = edge;
+
+        self.add_node(node1);
+        self.add_node(node2);
+        
+        self.adjacency_table_mutable()
+            .entry(node1.to_string())
+            .or_insert_with(Vec::new)
+            .push((node2.to_string(), weight));
+    
+        self.adjacency_table_mutable()
+            .entry(node2.to_string())
+            .or_insert_with(Vec::new)
+            .push((node1.to_string(), weight));
     }
 }
 pub trait Graph {
@@ -51,11 +65,9 @@ pub trait Graph {
         //TODO
         let (node1, node2, weight) = edge;
 
-        // 确保两个节点都在图中
         self.add_node(node1);
         self.add_node(node2);
         
-        // 添加无向边
         self.adjacency_table_mutable()
             .entry(node1.to_string())
             .or_insert_with(Vec::new)

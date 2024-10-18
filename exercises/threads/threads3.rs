@@ -12,37 +12,39 @@ use std::time::Duration;
 
 struct Queue {
     length: u32,
-    first_half: Vec<u32>,
-    second_half: Vec<u32>,
+    first_half: Arc<Vec<u32>>,
+    second_half: Arc<Vec<u32>>,
+
 }
 
 impl Queue {
     fn new() -> Self {
         Queue {
             length: 10,
-            first_half: vec![1, 2, 3, 4, 5],
-            second_half: vec![6, 7, 8, 9, 10],
+            first_half: Arc::new(vec![1, 2, 3, 4, 5]),
+            second_half: Arc::new(vec![6, 7, 8, 9, 10]),
         }
     }
 }
 
 fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
-    let qc = Arc::new(q);
-    let qc1 = Arc::clone(&qc);
-    let qc2 = Arc::clone(&qc);
+    let first_half_clone = Arc::clone(&q.first_half);
+    let second_half_clone = Arc::clone(&q.second_half);
 
+    let tx_first_half = tx.clone();
     thread::spawn(move || {
-        for val in &qc1.first_half {
+        for val in &*first_half_clone{
             println!("sending {:?}", val);
-            tx.send(*val).unwrap();
+            tx_first_half.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
 
+    let tx_second_half = tx.clone();
     thread::spawn(move || {
-        for val in &qc2.second_half {
+        for val in &*second_half_clone {
             println!("sending {:?}", val);
-            tx.send(*val).unwrap();
+            tx_second_half.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });

@@ -18,7 +18,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default,
+    T: Default + Ord,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -38,6 +38,39 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        if self.count >= self.items.len() {
+            self.items.push(T::default());
+        }
+        self.items[self.count] = value;
+        self.heapify_up(self.count);
+        }
+    fn heapify_up(&mut self, idx: usize) {
+        let mut current_idx = idx;
+        while current_idx > 1 {
+            let parent_idx = self.parent_idx(current_idx);
+            if (self.comparator)(&self.items[current_idx], &self.items[parent_idx]) {
+                self.items.swap(current_idx, parent_idx);
+                current_idx = parent_idx;
+            } else {
+                break;
+            }
+        }
+    }
+
+        
+    fn heapify_down(&mut self, idx: usize) {
+        let mut current_idx = idx;
+
+        while self.children_present(current_idx) {
+            let child_idx = self.smallest_child_idx(current_idx);
+            if (self.comparator)(&self.items[child_idx], &self.items[current_idx]) {
+                self.items.swap(current_idx, child_idx);
+                current_idx = child_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +91,13 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+        if right_idx <= self.count && (self.comparator)(&self.items[right_idx], &self.items[left_idx]) {
+            right_idx
+        } else {
+            left_idx
+        }
     }
 }
 
@@ -79,14 +118,23 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Ord + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.is_empty() {
+            return None;
+        }
+
+        let root = self.items[1].clone();
+        self.items.swap(1, self.count);
+        self.count -= 1;
+        self.heapify_down(1);
+        Some(root)
     }
+
 }
 
 pub struct MinHeap;

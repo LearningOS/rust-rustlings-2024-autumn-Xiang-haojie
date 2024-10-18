@@ -5,8 +5,16 @@
 */
 // I AM NOT DONE
 
-fn sort<T>(array: &mut [T]){
+fn sort<T: Ord>(array: &mut [T]){
 	//TODO
+    let length = array.len();
+    for i in 0..length {
+        for j in 0..length - 1 - i {
+            if array[j] > array[j + 1] {
+                array.swap(j, j + 1);
+            }
+        }
+    }
 }
 #[cfg(test)]
 mod tests {

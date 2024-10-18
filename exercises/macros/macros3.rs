@@ -13,8 +13,9 @@ mod macros {
             println!("Check out my macro!");
         };
     }
+    pub(crate) use my_macro;
 }
 
 fn main() {
-    my_macro!();
+    macros::my_macro!();
 }
